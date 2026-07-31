@@ -49,7 +49,8 @@ Home_interior/
 
 | Layer      | Technology                     |
 |------------|---------------------------------|
-| Backend    | Python, FastAPI/Flask *(update to match your framework)* |
+| Backend    | Python, FastAPI                 |
+| Database   | PostgreSQL                      |
 | Frontend   | React, TypeScript, Vite         |
 | Testing    | Pytest (backend)                |
 | Package Manager | pip (backend), npm/pnpm (frontend) |
@@ -59,6 +60,7 @@ Home_interior/
 - **Python** 3.10 or higher
 - **Node.js** 16 or higher
 - **npm** or **pnpm**
+- **PostgreSQL** 13 or higher
 - (Optional) **Git** for version control
 
 ---
@@ -87,7 +89,23 @@ Home_interior/
    pip install -r backend/requirements.txt
    ```
 
-3. **Run the API**
+3. **Set up PostgreSQL**
+
+   Make sure PostgreSQL is installed and running, then create a database for the project:
+
+   ```bash
+   psql -U postgres -c "CREATE DATABASE home_interior_db;"
+   ```
+
+   Update the `DATABASE_URL` in your `.env` file to point to this database (see [Environment & Configuration](#environment--configuration)).
+
+   If the project uses migrations (e.g. Alembic), apply them:
+
+   ```bash
+   alembic upgrade head
+   ```
+
+4. **Run the API**
 
    **Windows (PowerShell):**
    ```powershell
@@ -103,7 +121,7 @@ Home_interior/
 
    > 💡 Adjust the entrypoint (`backend.main:app`) if your project structure differs. The API will typically be available at `http://127.0.0.1:8000`.
 
-4. **(Optional) View interactive API docs**
+5. **(Optional) View interactive API docs**
 
    If using FastAPI, visit `http://127.0.0.1:8000/docs` for the auto-generated Swagger UI.
 
@@ -146,7 +164,7 @@ Home_interior/
 
   ```env
   # Backend
-  DATABASE_URL=your_database_connection_string
+  DATABASE_URL=postgresql://<username>:<password>@localhost:5432/home_interior_db
   SECRET_KEY=your_secret_key
   DEBUG=True
 
