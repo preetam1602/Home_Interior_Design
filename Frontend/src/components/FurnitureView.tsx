@@ -1,11 +1,12 @@
 import { Product } from '../types';
-import { products } from '../data';
+import { products, getDisplayPrice } from '../data';
 import { Sparkles, Armchair, Bed, Utensils, Briefcase, ChefHat, Flower2, Heart, CheckCircle2 } from 'lucide-react';
 import { motion } from 'motion/react';
 
 interface FurnitureViewProps {
   selectedDesigns: number[];
   onToggleSave: (id: number) => void;
+  onAskAI: (id: number) => void;
 }
 
 const SECTIONS = [
@@ -47,7 +48,7 @@ const SECTIONS = [
   },
 ] as const;
 
-export function FurnitureView({ selectedDesigns, onToggleSave }: FurnitureViewProps) {
+export function FurnitureView({ selectedDesigns, onToggleSave, onAskAI }: FurnitureViewProps) {
   return (
     <div className="w-full min-h-screen bg-[var(--theme-bg)] pt-36 pb-24 px-4 md:px-8 lg:px-12 selection:bg-[var(--theme-accent-soft)]/30">
       {/* Dynamic Offer Marquee */}
@@ -123,6 +124,7 @@ export function FurnitureView({ selectedDesigns, onToggleSave }: FurnitureViewPr
                   product={product}
                   isSaved={selectedDesigns.includes(product.id)}
                   onToggle={() => onToggleSave(product.id)}
+                  onAskAI={() => onAskAI(product.id)}
                   index={index}
                 />
               ))}
@@ -140,12 +142,12 @@ interface ProductCardProps {
   product: Product;
   isSaved: boolean;
   onToggle: () => void;
+  onAskAI: () => void;
   index: number;
 }
 
-function ProductCard({ product, isSaved, onToggle, index }: ProductCardProps) {
-  const discount = 0.10; // Auto-apply 10% discount styling for luxury items
-  const discountedPrice = product.price * (1 - discount);
+function ProductCard({ product, isSaved, onToggle, onAskAI, index }: ProductCardProps) {
+  const discountedPrice = getDisplayPrice(product);
 
   return (
     <motion.div
@@ -167,6 +169,13 @@ function ProductCard({ product, isSaved, onToggle, index }: ProductCardProps) {
           />
           {/* Subtle brand tint hover overlay */}
           <div className="absolute inset-0 bg-[var(--theme-accent)]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+          <button
+            onClick={onAskAI}
+            className="absolute top-3 right-3 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/90 hover:bg-white text-[var(--theme-accent)] text-[11px] font-semibold uppercase tracking-wider shadow-sm border border-[var(--theme-border)] transition-colors cursor-pointer"
+            title="Ask the AI designer about this"
+          >
+            <Sparkles className="w-3.5 h-3.5" /> Ask AI
+          </button>
         </div>
 
         {/* Product Details */}

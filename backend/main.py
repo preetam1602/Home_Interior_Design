@@ -12,6 +12,7 @@ from backend.routes import (
     auth,
     product,
     consultation,
+    consultant,
     dashboard,
     feedback,
     upload,
@@ -50,6 +51,7 @@ app.add_exception_handler(
 app.include_router(auth.router)
 app.include_router(product.router)
 app.include_router(consultation.router)
+app.include_router(consultant.router)
 app.include_router(dashboard.router)
 app.include_router(feedback.router)
 app.include_router(upload.router)

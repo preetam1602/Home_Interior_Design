@@ -6,9 +6,10 @@ import { motion } from 'motion/react';
 interface MaterialViewProps {
   selectedDesigns: number[];
   onToggleSave: (id: number) => void;
+  onAskAI: (id: number) => void;
 }
 
-export function MaterialView({ selectedDesigns, onToggleSave }: MaterialViewProps) {
+export function MaterialView({ selectedDesigns, onToggleSave, onAskAI }: MaterialViewProps) {
   const colorProducts = products.filter(p => p.category === 'color');
   const materialProducts = products.filter(p => p.category === 'material');
 
@@ -58,6 +59,7 @@ export function MaterialView({ selectedDesigns, onToggleSave }: MaterialViewProp
               product={product}
               isSaved={selectedDesigns.includes(product.id)}
               onToggle={() => onToggleSave(product.id)}
+              onAskAI={() => onAskAI(product.id)}
               index={index}
             />
           ))}
@@ -89,6 +91,7 @@ export function MaterialView({ selectedDesigns, onToggleSave }: MaterialViewProp
               product={product}
               isSaved={selectedDesigns.includes(product.id)}
               onToggle={() => onToggleSave(product.id)}
+              onAskAI={() => onAskAI(product.id)}
               index={index}
             />
           ))}
@@ -102,10 +105,11 @@ interface ProductCardProps {
   product: Product;
   isSaved: boolean;
   onToggle: () => void;
+  onAskAI: () => void;
   index: number;
 }
 
-function ProductCard({ product, isSaved, onToggle, index }: ProductCardProps) {
+function ProductCard({ product, isSaved, onToggle, onAskAI, index }: ProductCardProps) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 40 }}
@@ -126,6 +130,13 @@ function ProductCard({ product, isSaved, onToggle, index }: ProductCardProps) {
           />
           {/* Subtle brand tint overlay */}
           <div className="absolute inset-0 bg-[var(--theme-accent)]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+          <button
+            onClick={onAskAI}
+            className="absolute top-3 right-3 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/90 hover:bg-white text-[var(--theme-accent)] text-[11px] font-semibold uppercase tracking-wider shadow-sm border border-[var(--theme-border)] transition-colors cursor-pointer"
+            title="Ask the AI designer about this"
+          >
+            <Sparkles className="w-3.5 h-3.5" /> Ask AI
+          </button>
         </div>
 
         {/* Product Details */}

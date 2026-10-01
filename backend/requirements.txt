@@ -20,3 +20,6 @@ python-multipart==0.0.20
 
 # Environment
 python-dotenv==1.0.1
+
+# AI consultant (LLM HTTP client)
+httpx==0.28.1

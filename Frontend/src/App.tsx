@@ -5,7 +5,8 @@ import { FurnitureView } from './components/FurnitureView';
 import { SelectedDesignsView } from './components/SelectedDesignsView';
 import { AdminDashboardView } from './components/AdminDashboardView';
 import { LoginView } from './components/LoginView';
-import { Heart, ChevronRight, Menu, X, ArrowUp, ShieldCheck, LogOut } from 'lucide-react';
+import { AIConsultantPanel } from './components/consultant/AIConsultantPanel';
+import { Heart, ChevronRight, Menu, X, ArrowUp, ShieldCheck, LogOut, Sparkles } from 'lucide-react';
 
 export default function App() {
   const [currentView, setCurrentView] = useState<'home' | 'material' | 'furniture' | 'selected-designs' | 'admin' | 'login'>('home');
@@ -13,6 +14,8 @@ export default function App() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [adminToken, setAdminToken] = useState<string | null>(localStorage.getItem('adminToken'));
+  const [consultantOpen, setConsultantOpen] = useState(false);
+  const [focusedProductId, setFocusedProductId] = useState<number | null>(null);
 
   // Load saved designs from localStorage
   useEffect(() => {
@@ -59,6 +62,11 @@ export default function App() {
 
   const clearAllDesigns = () => {
     saveDesigns([]);
+  };
+
+  const askAboutProduct = (id: number) => {
+    setFocusedProductId(id);
+    setConsultantOpen(true);
   };
 
   const switchView = (view: 'home' | 'material' | 'furniture' | 'selected-designs' | 'admin' | 'login') => {
@@ -134,6 +142,20 @@ export default function App() {
 
         {/* Catalog Subpage Toggles & Cart */}
         <div className="flex items-center gap-3 sm:gap-4">
+          {/* AI Interior Designer entry point (always reachable, unlike the floating button) */}
+          {currentView !== 'admin' && currentView !== 'login' && (
+            <button
+              onClick={() => setConsultantOpen(open => !open)}
+              className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold uppercase tracking-wider transition-all border ${
+                consultantOpen
+                  ? 'bg-[var(--theme-accent-strong)] text-white border-[var(--theme-accent-strong)]'
+                  : 'bg-[var(--theme-accent)] text-white border-[var(--theme-accent)] hover:bg-[var(--theme-accent-strong)]'
+              }`}
+              title="Ask the AI Interior Designer"
+            >
+              <Sparkles className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Ask AI</span>
+            </button>
+          )}
           <button
             onClick={() => switchView('material')}
             className={`hidden md:inline-flex items-center gap-1 px-3.5 py-2 rounded-xl text-xs font-semibold uppercase tracking-wider transition-all border ${
@@ -255,12 +277,14 @@ export default function App() {
           <MaterialView
             selectedDesigns={savedDesigns}
             onToggleSave={toggleSaveDesign}
+            onAskAI={askAboutProduct}
           />
         )}
         {currentView === 'furniture' && (
           <FurnitureView
             selectedDesigns={savedDesigns}
             onToggleSave={toggleSaveDesign}
+            onAskAI={askAboutProduct}
           />
         )}
         {currentView === 'selected-designs' && (
@@ -350,11 +374,28 @@ export default function App() {
       {showScrollTop && (
         <button
           onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-          className="fixed bottom-8 right-8 p-3 bg-[var(--theme-text)] hover:bg-[var(--theme-accent)] text-white rounded-xl shadow-lg border border-[var(--theme-border)] hover:-translate-y-1 active:translate-y-0 active:scale-95 transition-all z-40 cursor-pointer"
+          className="fixed bottom-24 right-8 p-3 bg-[var(--theme-text)] hover:bg-[var(--theme-accent)] text-white rounded-xl shadow-lg border border-[var(--theme-border)] hover:-translate-y-1 active:translate-y-0 active:scale-95 transition-all z-40 cursor-pointer"
           title="Scroll to Top"
         >
           <ArrowUp className="w-5 h-5" />
         </button>
+      )}
+
+      {/* AI Interior Design Consultant (hidden in the admin portal) */}
+      {currentView !== 'admin' && currentView !== 'login' && (
+        <AIConsultantPanel
+          open={consultantOpen}
+          // On the home page the floating button would sit on the hero's corner cards, so it only
+          // appears once the visitor scrolls past the hero; the header button covers the rest.
+          showLauncher={currentView !== 'home' || showScrollTop}
+          onOpen={() => setConsultantOpen(true)}
+          onClose={() => setConsultantOpen(false)}
+          currentView={currentView}
+          savedDesigns={savedDesigns}
+          onToggleSave={toggleSaveDesign}
+          focusedProductId={focusedProductId}
+          onClearFocus={() => setFocusedProductId(null)}
+        />
       )}
     </div>
   );

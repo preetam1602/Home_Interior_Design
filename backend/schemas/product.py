@@ -8,6 +8,9 @@ class ProductBase(BaseModel):
     price: int
     category: str
     stock: int = 0
+    room: str | None = None
+    unit: str | None = None
+    styles: list[str] | None = None
 
 class ProductCreate(ProductBase):
     pass  # what the admin submits to add a product
@@ -19,6 +22,9 @@ class ProductUpdate(BaseModel):
     category: str | None = None
     stock: int | None = None
     image_url: str | None = None
+    room: str | None = None
+    unit: str | None = None
+    styles: list[str] | None = None
     # all optional — partial updates
 
 class ProductResponse(ProductBase):

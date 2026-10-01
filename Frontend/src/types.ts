@@ -7,6 +7,7 @@ export interface Product {
   category: 'color' | 'material' | 'furniture' | 'decor';
   unit?: string; // e.g. "/ litre", "/sq.ft", or empty
   room?: 'living' | 'bedroom' | 'dining' | 'office' | 'kitchen' | 'decor';
+  styles?: string[]; // e.g. "modern", "scandinavian" — used by the AI consultant
 }
 
 export interface SavedDesign {
