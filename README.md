@@ -45,22 +45,19 @@ Studio staff log in to the **Admin Portal** to manage consultation requests.
 
 ## Tech Stack
 
-| Layer | Technology |
-|-------|------------|
-| Backend | Python, FastAPI, SQLAlchemy 2, Pydantic 2, JWT auth |
-| Database | PostgreSQL |
-| Frontend | React 19, TypeScript, Vite 6, Tailwind CSS 4, Motion, Lucide icons |
-| AI (recommendations) | Any OpenAI-compatible chat API — defaults to Groq (`openai/gpt-oss-120b`) |
-| AI (video avatar) | HeyGen LiveAvatar (`@heygen/liveavatar-web-sdk`) |
-| Package managers | pip (backend), npm (frontend) |
+| Layer      | Technology                     |
+|------------|---------------------------------|
+| Backend    | Python, FastAPI/Flask *(update to match your framework)* |
+| Frontend   | React, TypeScript, Vite         |
+| Testing    | Pytest (backend)                |
+| Package Manager | pip (backend), npm/pnpm (frontend) |
 
 ## Requirements
 
 - **Python** 3.10 or higher
-- **Node.js** 18 or higher (required by Vite 6)
-- **PostgreSQL** database
-- A **Groq API key** (or another OpenAI-compatible LLM key) for the AI Interior Designer
-- (Optional) A **LiveAvatar API key** for the video consultant — from [app.liveavatar.com/developers](https://app.liveavatar.com/developers). A HeyGen account key does *not* work here.
+- **Node.js** 16 or higher
+- **npm** or **pnpm**
+- (Optional) **Git** for version control
 
 ---
 
@@ -107,35 +104,28 @@ Open **http://localhost:5173** and click **Ask AI Interior Designer** (bottom-ri
 
 2. **Install dependencies**
 
-   **Windows:**
+   ```bash
+   pip install -r backend/requirements.txt
+   ```
+
+3. **Run the API**
+
+   **Windows (PowerShell):**
    ```powershell
    backend\.venv\Scripts\python.exe -m pip install -r backend\requirements.txt
    ```
 
    **macOS / Linux:**
    ```bash
-   backend/.venv/bin/python -m pip install -r backend/requirements.txt
+   cd Home_interior
+   uvicorn backend.main:app --reload
    ```
 
-3. **Create `backend/.env`** — see [Environment & Configuration](#environment--configuration).
+   > 💡 Adjust the entrypoint (`backend.main:app`) if your project structure differs. The API will typically be available at `http://127.0.0.1:8000`.
 
-4. **Load the product catalog into the database**
+4. **(Optional) View interactive API docs**
 
-   Tables are created automatically on first start; this fills the `products` table from `Frontend/src/catalog.json`:
-
-   ```powershell
-   backend\.venv\Scripts\python.exe -m backend.seed_products
-   ```
-   (macOS / Linux: `backend/.venv/bin/python -m backend.seed_products`)
-
-5. **Run the API**
-
-   ```powershell
-   backend\.venv\Scripts\python.exe -m uvicorn backend.main:app --port 8000
-   ```
-   (macOS / Linux: `backend/.venv/bin/python -m uvicorn backend.main:app --port 8000`)
-
-   Interactive API docs: http://localhost:8000/docs
+   If using FastAPI, visit `http://127.0.0.1:8000/docs` for the auto-generated Swagger UI.
 
 ### Frontend Setup
 
@@ -153,64 +143,21 @@ npm run preview   # preview the production build
 
 Secrets live in **`backend/.env`**, which is git-ignored — never commit it.
 
-```env
-# --- Required ---
-DATABASE_URL=postgresql://user:password@localhost:5432/home_interior
-SECRET_KEY=a-long-random-string
-ALGORITHM=HS256
-ACCESS_TOKEN_EXPIRE_MINUTES=30
+  ```env
+  # Backend
+  DATABASE_URL=your_database_connection_string
+  SECRET_KEY=your_secret_key
+  DEBUG=True
 
-# --- AI Interior Designer (text answers + product recommendations) ---
-LLM_key=your_groq_api_key
-# LLM_BASE_URL=https://api.groq.com/openai/v1   # any OpenAI-compatible endpoint
-# LLM_MODEL=openai/gpt-oss-120b
+  # Frontend
+  VITE_API_BASE_URL=http://127.0.0.1:8000
+  ```
 
-# --- Video consultant (optional; hidden on the site when not set) ---
-LIVEAVATAR_API_KEY=your_liveavatar_api_key
-# LIVEAVATAR_SANDBOX=true                  # true = free test mode (demo avatar, ~1 min sessions)
-# LIVEAVATAR_AVATAR_ID=your_avatar_id      # needed once sandbox is off
-# LIVEAVATAR_VOICE_ID=                     # empty = the avatar's default voice
-# LIVEAVATAR_MAX_SESSION_SECONDS=300
-# AVATAR_SESSIONS_PER_HOUR=5            # video sessions per visitor IP; raise (e.g. 50) while testing
-```
+- Consider providing a `.env.example` file with placeholder values so contributors know which variables are required.
 
-**Going live with the video avatar:** choose an avatar in LiveAvatar, then set `LIVEAVATAR_AVATAR_ID=...` and `LIVEAVATAR_SANDBOX=false`. Live sessions cost **2 credits per minute** (the free plan includes 10 credits/month ≈ 5 minutes).
+## Running Tests
 
-**Frontend:** the AI features call `http://localhost:8000` by default. To point them elsewhere, create `Frontend/.env` with:
-
-```env
-VITE_API_URL=https://your-api.example.com
-```
-
-> Note: the booking, feedback, login and admin screens still use a hard-coded `http://localhost:8000`.
-
-The backend allows requests from `http://localhost:5173` and `http://localhost:3000` (CORS, in `backend/main.py`).
-
----
-
-## AI Interior Designer
-
-```
-Visitor question ──► POST /ai/consult ──► catalog from PostgreSQL + LLM (Groq)
-                                             │
-              answer text + product ids ◄────┘  (ids checked against the catalog)
-                     │
-                     ├─► chat panel shows the answer and product cards (with Save)
-                     └─► video avatar speaks a short summary (if started)
-```
-
-- **Where:** the floating **Ask AI Interior Designer** button on every page, and **Ask AI** on each product card (the consultant then knows which product you mean).
-- **Context sent with each question:** current page, the product being asked about, saved designs, and the recent conversation.
-- **Guardrails:** recommends only real catalog items, quotes the prices shown on the site (furniture and decor include the 10% offer), and adds up budget totals in code rather than trusting the model.
-- **Video consultant:** HeyGen LiveAvatar is used only as a presenter — it speaks the backend's answer and has no AI of its own. The visitor's microphone is never used. A session starts only when the visitor clicks **Start video**, and ends on **End video**, when the panel closes, after 2 minutes without speaking, or at the session time limit.
-- **Rate limits (per visitor IP):** 20 questions per 10 minutes, and 5 video sessions per hour (set with `AVATAR_SESSIONS_PER_HOUR`). The counters reset when the API restarts.
-- **Groq free tier:** about 8,000 tokens per minute, which is roughly **3 questions per minute across all visitors**. Upgrade the Groq plan for real traffic.
-
-## Product Catalog
-
-`Frontend/src/catalog.json` is the **single source of truth** for products. The frontend imports it directly, and the backend's `products` table is synced from it so product ids stay identical (saved designs and consultation items refer to these ids).
-
-After editing the catalog, re-sync the database:
+Backend tests live under `backend/tests/`. Run them with your preferred test runner:
 
 ```powershell
 backend\.venv\Scripts\python.exe -m backend.seed_products
