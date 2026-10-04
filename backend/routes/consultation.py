@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends
+from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from backend.database import get_db
@@ -32,7 +33,6 @@ def get_all(db: Session = Depends(get_db), admin = Depends(get_current_admin)):
     return get_all_consultations(db)
 
 
-from pydantic import BaseModel
 class StatusUpdate(BaseModel):
     status: str
 

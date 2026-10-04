@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 
-from backend.core.security import hash_password, verify_password
+from backend.core.security import verify_password
 from backend.models.admin import Admin
 from backend.schemas.admin import AdminCreate, createAdmin
 
